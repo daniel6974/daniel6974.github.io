@@ -1,55 +1,41 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// CONFIGURACIÓN
+$destinatario = "danielcarrizo74@gmail.com"; // Cambiar por tu correo real
+$asunto = "Nuevo mensaje desde el formulario de contacto";
 
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
+// OBTENER DATOS
+$nombre   = $_POST['nombre'] ?? '';
+$email    = $_POST['email'] ?? '';
+$servicio = $_POST['servicio'] ?? '';
+$mensaje  = $_POST['mensaje'] ?? '';
 
-// CONFIGURACIÓN SMTP
-$mail = new PHPMailer(true);
+// VALIDACIÓN
+if (!$nombre || !$email || !$mensaje) {
+    die("Error: Faltan datos obligatorios.");
+}
 
-try {
-    // Servidor SMTP
-    $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com'; 
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'danielcarrizo74@gmail.com'; 
-    $mail->Password   = 'baeiuifpjukabnpj'; 
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = 587;
+// CUERPO DEL MENSAJE
+$contenido = "
+Nuevo mensaje desde la web:
 
-    // Remitente
-    $mail->setFrom('danielcarrizo74@gmail.com', 'DC GRAPHIC & WEB DESIGN');
+Nombre: $nombre
+Email: $email
+Servicio de interés: $servicio
 
-    // Destinatario
-    $mail->addAddress('danielcarrizo74@gmail.com');
+Mensaje:
+$mensaje
+";
 
-    // Datos del formulario
-    $nombre   = $_POST['nombre'] ?? '';
-    $email    = $_POST['email'] ?? '';
-    $servicio = $_POST['servicio'] ?? '';
-    $mensaje  = $_POST['mensaje'] ?? '';
+// CABECERAS
+$headers = "From: $nombre <$email>\r\n";
+$headers .= "Reply-To: $email\r\n";
+$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
 
-    // Contenido del correo
-    $mail->isHTML(true);
-    $mail->Subject = 'Nuevo mensaje desde el formulario de contacto';
-    $mail->Body    = "
-        <h2>Nuevo mensaje desde la web</h2>
-        <p><strong>Nombre:</strong> $nombre</p>
-        <p><strong>Email:</strong> $email</p>
-        <p><strong>Servicio de interés:</strong> $servicio</p>
-        <p><strong>Mensaje:</strong><br>$mensaje</p>
-    ";
-
-    // Enviar
-    $mail->send();
-
-    // Redirigir con alerta
+// ENVIAR
+if (mail($destinatario, $asunto, $contenido, $headers)) {
     header("Location: index.html?enviado=1");
     exit;
-
-} catch (Exception $e) {
-    echo "Error al enviar el mensaje: {$mail->ErrorInfo}";
+} else {
+    echo "<h2>Error al enviar el mensaje.</h2><p>Intentá nuevamente más tarde.</p>";
 }
 ?>
